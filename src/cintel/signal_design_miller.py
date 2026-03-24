@@ -133,7 +133,7 @@ def main() -> None:
     calculated_error_rate: pl.Expr = pl.col("errors") / pl.col("requests")
 
     # ----------------------------------------------------
-    # STEP 2.3: DEFINE THE ERROR RATE & SUCCESS COUNT SIGNAL RECIPE
+    # STEP 2.3: DEFINE THE ERROR RATE SIGNAL RECIPE
     # ----------------------------------------------------
     # A signal recipe tells Polars how to build a new column.
     # If requests > 0, use errors / requests.
@@ -144,16 +144,6 @@ def main() -> None:
         .then(calculated_error_rate)
         .otherwise(0.0)
         .alias("error_rate")
-    )
-
-    # If requests > 0, then success_count = requests - errors
-    # Otherwise, success_count = 0.
-    # Name the new column "success_count".
-    success_count_signal_recipe: pl.Expr = (
-        pl.when(is_requests_positive)
-        .then(pl.col("requests") - pl.col("errors"))
-        .otherwise(0)
-        .alias("success_count")
     )
 
     # ----------------------------------------------------
@@ -188,6 +178,26 @@ def main() -> None:
     # - a renamed version of an existing column.
     throughput_signal_recipe: pl.Expr = pl.col("requests").alias("throughput")
 
+    # Create a poor_experience flag that is True when error_rate > 0.05 or avg_latency_ms > 300
+    # Error rates and average latency must be calculated first
+    # First create two threshold conditions for error_rate and avg_latency_ms
+    ERROR_RATE: Final[float] = 0.05
+    AVG_LATENCY_MS: Final[float] = 300.0
+
+    # Now define the poor_experience_recipe using the conditions
+    poor_experience_signal_recipe: pl.Expr = (
+        (
+            pl.when(pl.col("errors") / pl.col("requests") > ERROR_RATE)
+            .then(True)
+            .otherwise(False)
+        )
+        | (
+            pl.when(pl.col("total_latency_ms") / pl.col("requests") > AVG_LATENCY_MS)
+            .then(True)
+            .otherwise(False)
+        )
+    ).alias("poor_experience")
+
     # ----------------------------------------------------
     # STEP 2.7: APPLY THE SIGNAL RECIPES TO THE DATAFRAME
     # ----------------------------------------------------
@@ -196,13 +206,15 @@ def main() -> None:
     df_with_signals: pl.DataFrame = df.with_columns(
         [
             error_rate_signal_recipe,
-            success_count_signal_recipe,
             avg_latency_signal_recipe,
             throughput_signal_recipe,
+            poor_experience_signal_recipe,
         ]
     )
 
-    LOG.info("Created signal columns: error_rate, avg_latency_ms, throughput")
+    LOG.info(
+        "Created signal columns: error_rate, avg_latency_ms, throughput, poor_experience"
+    )
 
     # ----------------------------------------------------
     # STEP 3: SELECT THE COLUMNS WE WANT TO SAVE
@@ -215,10 +227,10 @@ def main() -> None:
             "requests",
             "errors",
             "total_latency_ms",
-            "success_count",
             "error_rate",
             "avg_latency_ms",
             "throughput",
+            "poor_experience",
         ]
     )
 
