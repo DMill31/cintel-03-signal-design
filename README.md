@@ -112,6 +112,7 @@ git add -A
 uvx pre-commit run --all-files
 
 uv run python -m cintel.signal_design_case
+uv run python -m cintel.signal_design_miller
 
 uv run ruff format .
 uv run ruff check . --fix
@@ -123,6 +124,12 @@ git push -u origin main
 ```
 
 </details>
+
+## Modification
+A modified file titled signal_design_miller.py was created based off of the original signal_design_case.py
+In this new file, an extra signal is designed: poor_experience
+This poor_experience signal is a flag that sets to true when the error rate is above 5% OR the average latency is above 300 ms.
+While all the rows output false, the logic works and we can see that none of these show a poor experience.
 
 ## Notes
 
