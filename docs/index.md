@@ -30,8 +30,8 @@ There are four columns:
 
 ### Signals
 A total of 6 signals were created:
-- error_rate: How frequently errors occurr
-  A perfomance metric to see if the errors are high or low in frequency
+- error_rate: How frequently errors occur
+  A performance metric to see if the errors are high or low in frequency
 
 - avg_latency_ms: The average response time in milliseconds
   Rather than total_latency_ms, this puts each request into perspective and lets us see if each request had an overall high, low, or normal latency
