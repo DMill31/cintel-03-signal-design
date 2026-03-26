@@ -134,6 +134,15 @@ This poor_experience signal is a flag that sets to true when the error rate is a
 
 While all the rows output false, the logic works and we can see that none of these show a poor experience.
 
+## Custom Project
+The custom project for this repo is very similar to the modification, only it goes further.
+
+To start, the custom project's original data contains an extra initial column: timestamp.
+
+Going beyond just the modification, more signals like hour_of_day and throughput_rps are created.
+
+The full description of the custom project can be found [Here](https://dmill31.github.io/cintel-03-signal-design/#custom-project).
+
 ## Notes
 
 - Use the **UP ARROW** and **DOWN ARROW** in the terminal to scroll through past commands.
